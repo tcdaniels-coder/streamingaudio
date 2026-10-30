@@ -1,10 +1,13 @@
-# [Project name]
+# Stream Audio Control
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A local operator console for reading and adjusting a selected Behringer X32 stream bus, with ATEM Television Studio connection status.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/stream-audio-control run dev` — run the Replit preview (demo mode; it cannot reach local show hardware)
+- `pnpm --filter @workspace/stream-audio-control run build` — build the browser console
+- `pnpm --filter @workspace/stream-audio-control run local` — serve the built console and local hardware bridge at `http://127.0.0.1:4179`
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,15 +25,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/stream-audio-control/src/` — live console, setup, and X32 processing screens
+- `artifacts/stream-audio-control/bridge/` — loopback-only local bridge, X32 OSC adapter, and ATEM connection adapter
+- `artifacts/stream-audio-control/bridge/README.md` — local installation and connection steps
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Real device communication runs on the operator computer on the same LAN; the Replit-hosted preview cannot access show hardware.
+- Use X32 onboard DSP for EQ and compression; the app is a control/monitoring surface, not an audio processor.
+- The local bridge binds to loopback and accepts private IPv4 device addresses only; it does not expose control endpoints to the LAN or hosted site.
+- ATEM is connection/status only; no switcher settings are changed.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The console shows X32 and ATEM connection state, stream-bus level/mute, and current X32 bus EQ/compressor settings. The operator can make confirmed changes to the selected bus. Demo mode is clearly marked and never presents simulated values as real device readings.
 
 ## User preferences
 

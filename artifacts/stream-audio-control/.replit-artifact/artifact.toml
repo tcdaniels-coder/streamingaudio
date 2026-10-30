@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Stream Audio Control"
+description = "A live-stream operator console for monitoring and safely controlling stream-focused audio on a Behringer X32 alongside a Blackmagic ATEM Television Studio 4K-family switcher. It keeps real-time DSP on the X32, provides clear device connection status, and starts in demo mode until a local hardware bridge is configured."
+version = "1.0.0"
+id = "artifacts/stream-audio-control"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26120
+
+[services.development]
+run = "pnpm --filter @workspace/stream-audio-control run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/stream-audio-control", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/stream-audio-control/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26120"
+BASE_PATH = "/"
