@@ -15,6 +15,10 @@ and HKCU, and collect test evidence before removing that account. A standard-use
 scheduled task also failed to start on the hosted image, so prefer a directly
 launched profile-loaded process and bound its lifetime. Rebuild inherited profile
 environment variables from the actual user's loaded profile, not runneradmin's.
+An account that has never logged into Explorer also needs its usual per-user
+shell folders provisioned. Already-loaded shell APIs can cache empty lookups;
+assert the fresh installer's real shortcut files and targets rather than
+treating those cached lookups as evidence of installer failure.
 
 Preserve architecture-specific app archives inside the universal Mac bundle
 rather than merging their automatically unpacked dependency files.

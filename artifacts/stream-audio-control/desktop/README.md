@@ -59,6 +59,14 @@ install software on the mixer.
 
 ## Native validation gate
 
+The [successful native run](https://github.com/tcdaniels-coder/streamingaudio/actions/runs/41162829069)
+on October 31, 2026 (UTC) confirmed Windows x64 per-user installation, launch,
+bridge operation, and uninstall cleanup, plus Intel and Apple Silicon Mac
+signature integrity, launch, bridge operation, and shutdown. Download the
+`Windows-installer` and `macOS-installer` artifacts from that run. The original
+App Storage downloads described above are separate, older initial test builds;
+they were not replaced or retrospectively validated.
+
 The workflow tests the **newly built** release, not previously downloaded files:
 
 - Windows: create a fresh standard-user account with its own profile and HKCU,
