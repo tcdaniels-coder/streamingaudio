@@ -27,7 +27,7 @@ FunctionEnd
 
 Section "Install"
   SetOutPath "$INSTDIR"
-  File /r "${PROJECT_DIR}/release/win-unpacked/*"
+  File /r "${PROJECT_DIR}\release\win-unpacked\*"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   CreateDirectory "$SMPROGRAMS\Stream Audio Control"
   CreateShortcut "$SMPROGRAMS\Stream Audio Control\Stream Audio Control.lnk" "$INSTDIR\Stream Audio Control.exe"

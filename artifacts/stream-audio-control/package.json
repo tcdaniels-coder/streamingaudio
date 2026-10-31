@@ -109,6 +109,7 @@
       "hardenedRuntime": false,
       "entitlements": "desktop/entitlements.plist",
       "entitlementsInherit": "desktop/entitlements.plist",
+      "x64ArchFiles": "**/node_modules/@julusian/freetype2/prebuilds/**",
       "category": "public.app-category.audio-video",
       "target": [
         {
