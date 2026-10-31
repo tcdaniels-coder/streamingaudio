@@ -35,11 +35,27 @@ try {
   New-Item -ItemType Directory -Force $env:TEMP | Out-Null
   Write-Output "Validated standard-user token and loaded a clean profile"
   $installDir = Join-Path $env:LOCALAPPDATA "Programs\Stream Audio Control"
-  # Fresh profiles have never had Explorer create their known folders.
-  $desktopFolder = [Environment]::GetFolderPath([Environment+SpecialFolder]::Desktop, [Environment+SpecialFolderOption]::Create)
-  $programsFolder = [Environment]::GetFolderPath([Environment+SpecialFolder]::Programs, [Environment+SpecialFolderOption]::Create)
-  Require (-not [string]::IsNullOrEmpty($desktopFolder)) "Desktop known folder could not be created"
-  Require (-not [string]::IsNullOrEmpty($programsFolder)) "Start menu known folder could not be created"
+  # This account has never logged into Explorer. Provision its normal per-user
+  # shell folders explicitly before testing what the installer writes to them.
+  $desktopFolder = Join-Path $env:USERPROFILE "Desktop"
+  $programsFolder = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+  $folders = @{
+    "Desktop" = $desktopFolder
+    "Programs" = $programsFolder
+    "Start Menu" = (Split-Path $programsFolder)
+    "AppData" = $env:APPDATA
+    "Local AppData" = $env:LOCALAPPDATA
+  }
+  foreach ($keyName in @("User Shell Folders", "Shell Folders")) {
+    $shellKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\$keyName"
+    New-Item $shellKey -Force | Out-Null
+    foreach ($entry in $folders.GetEnumerator()) {
+      New-Item -ItemType Directory -Force $entry.Value | Out-Null
+      New-ItemProperty $shellKey -Name $entry.Key -Value $entry.Value -PropertyType String -Force | Out-Null
+    }
+  }
+  Require ([Environment]::GetFolderPath("Desktop") -eq $desktopFolder) "Desktop known folder is not initialized correctly"
+  Require ([Environment]::GetFolderPath("Programs") -eq $programsFolder) "Start menu known folder is not initialized correctly"
   $desktopLink = Join-Path $desktopFolder "Stream Audio Control.lnk"
   $startMenuDir = Join-Path $programsFolder "Stream Audio Control"
   $registrySuffix = "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamAudioControl"

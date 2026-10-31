@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { readFile, rm } from "node:fs/promises";
+import { readFile, realpath, rm } from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 
@@ -46,7 +46,8 @@ try {
   assert.equal(report.ok, true, report.error);
   assert.equal(report.packaged, true);
   assert.equal(report.arch, expectedArch);
-  assert.equal(path.resolve(report.executable), path.resolve(executable));
+  // macOS resolves /var to /private/var when reporting process.execPath.
+  assert.equal(await realpath(report.executable), await realpath(executable));
   await assertPortClosed();
   console.log(`PASS: installed ${report.platform}/${report.arch} app, renderer, packaged bridge, and shutdown`);
 } finally {
