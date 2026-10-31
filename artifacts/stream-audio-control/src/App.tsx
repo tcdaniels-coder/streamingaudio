@@ -131,14 +131,14 @@ function DeviceCard({ kind, device }: { kind: 'x32' | 'atem'; device: Device }) 
   const isX32 = kind === 'x32';
   const connected = device.connected;
   const Icon = isX32 ? AudioLines : Radio;
-  const name = isX32 ? 'BEHRINGER X32' : 'ATEM TELEVISION STUDIO';
+  const name = isX32 ? 'BEHRINGER X32' : 'ATEM PRODUCTION STUDIO 4K';
   return <section className="panel" data-testid={`device-${kind}`}>
     <div className="panel-head">
       <div className="panel-label"><span className="device-icon"><Icon size={15} /></span>{name}</div>
       <div className={`status-chip ${connected ? 'connected' : ''}`} data-testid={`status-${kind}`}><span className="status-led" />{connected ? 'Connected' : 'Disconnected'}</div>
     </div>
     <div className="device-body">
-      <div><div className="device-model" data-testid={`value-${kind}-model`}>{connected ? device.model || (isX32 ? 'X32 digital mixer' : 'ATEM switcher') : 'No hardware link'}</div>
+      <div><div className="device-model" data-testid={`value-${kind}-model`}>{connected ? device.model || (isX32 ? 'X32 digital mixer' : 'ATEM Production Studio 4K') : 'No hardware link'}</div>
         <div className="device-address" data-testid={`value-${kind}-address`}>{connected ? device.address || 'Address not reported' : 'Address not connected'}</div></div>
       <div className="device-state">{connected ? <Check size={16} color="#338064" /> : <span>Awaiting link</span>}</div>
     </div>
@@ -261,13 +261,13 @@ function SetupPage() {
   };
 
   return <AppFrame><main className="shell-content">
-    <div className="header-row"><div><div className="eyebrow">Operator configuration</div><h1 className="page-title">Bridge & device setup</h1><p className="page-subtitle">Connect through the local service running beside your show equipment.</p></div>
+    <div className="header-row"><div><div className="eyebrow">Operator configuration</div><h1 className="page-title">Bridge & device setup</h1><p className="page-subtitle">Connect from your macOS or Windows show computer through the local bridge.</p></div>
       <div className="mode-pill" data-testid="status-setup-mode"><span className="mode-dot" />{demo ? 'Demo · not connected' : 'Local hardware mode'}</div></div>
     {demo && <div className="setup-warning" data-testid="status-setup-demo"><strong>DEMO — THIS PREVIEW CANNOT REACH YOUR LAN.</strong> The browser preview is not running on the operator computer. Install and open the local bridge there to access the X32 and ATEM. Entering addresses here does not establish a hardware connection.</div>}
     {!!bridge.error && <div className="error-banner" role="alert" data-testid="status-setup-error"><span>{bridge.error}</span><button className="btn btn-quiet" onClick={() => void bridge.refresh()} data-testid="button-retry-setup">Retry status</button></div>}
     <div className="setup-layout">
       <section className="panel setup-panel"><div className="panel-head" style={{ margin: '-22px -22px 2px' }}><div className="panel-label"><span className="device-icon"><Cable size={15} /></span>GET THE LOCAL BRIDGE READY</div><span className="eyebrow">01 — 03</span></div>
-        <div className="step"><span className="step-num">01</span><div><h3>Run the bridge on the operator computer</h3><p>Hardware access is provided by the local bridge service. Start it on the machine connected to your production network, then open this console from that same computer.</p></div></div>
+        <div className="step"><span className="step-num">01</span><div><h3>Run the bridge on the operator computer</h3><p>The local bridge runs on macOS and Windows. Start it on the machine connected to your production network, then open this console from that same computer.</p></div></div>
         <div className="step"><span className="step-num">02</span><div><h3>Use device addresses on your show network</h3><p>Enter the X32 and ATEM IPv4 addresses below. Ensure the computer and devices share a reachable network and that device control is enabled.</p></div></div>
         <div className="step"><span className="step-num">03</span><div><h3>Confirm both links before the show</h3><p>Check that the console reports each device as connected. Connection requests do not write mixer settings; stream bus changes require a separate confirmation.</p></div></div>
         <div className="callout"><strong>Safety note</strong><br />A green connection state means the bridge reports a device link. It does not confirm the correctness of a show mix or switcher configuration.</div>
@@ -275,7 +275,7 @@ function SetupPage() {
       <section className="panel setup-panel"><div className="panel-head" style={{ margin: '-22px -22px 18px' }}><div className="panel-label"><span className="device-icon"><Router size={15} /></span>DEVICE ADDRESSING</div><span className={`status-chip ${!demo && bridge.status.x32.connected && bridge.status.atem.connected ? 'connected' : ''}`} data-testid="status-hardware-summary"><span className="status-led" />{!demo && bridge.status.x32.connected && bridge.status.atem.connected ? 'Both linked' : 'Not linked'}</span></div>
         <form className="address-form" onSubmit={connect}>
           <label><span className="field-label">Behringer X32 address</span><input className="field-input" placeholder="192.168.1.40" value={x32Address} onChange={e => setX32Address(e.target.value)} inputMode="decimal" data-testid="input-x32-address" /><span className="form-hint">IPv4 address of the mixer on your production LAN.</span></label>
-          <label><span className="field-label">ATEM Television Studio address</span><input className="field-input" placeholder="192.168.1.50" value={atemAddress} onChange={e => setAtemAddress(e.target.value)} inputMode="decimal" data-testid="input-atem-address" /><span className="form-hint">Address for the connected ATEM Television Studio 4K-family switcher.</span></label>
+          <label><span className="field-label">ATEM Production Studio 4K address</span><input className="field-input" placeholder="192.168.1.50" value={atemAddress} onChange={e => setAtemAddress(e.target.value)} inputMode="decimal" data-testid="input-atem-address" /><span className="form-hint">Ethernet address for your Blackmagic Design ATEM Production Studio 4K.</span></label>
           <label><span className="field-label">X32 stream bus</span><select className="field-input" value={busNumber} onChange={e => setBusNumber(e.target.value)} data-testid="select-stream-bus"><option value="">Choose bus 1–16</option>{Array.from({ length: 16 }, (_, index) => <option key={index + 1} value={index + 1}>Bus {index + 1}</option>)}</select><span className="form-hint">Choose the bus used for the stream. No bus is preselected.</span></label>
         <div className="form-hint">Fader targets are entered in dB; the local bridge converts approved values to the X32 linear OSC fader scale.</div>
         <div className="button-row"><button className="btn btn-primary" type="submit" disabled={busy || demo || !x32Address.trim() || !atemAddress.trim() || !busNumber} data-testid="button-connect">{busy ? 'Connecting…' : 'Connect devices'}</button>
