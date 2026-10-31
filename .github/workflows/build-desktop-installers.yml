@@ -3,16 +3,20 @@ name: Build desktop installers
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   installers:
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-latest
+          - runner: macos-15
             command: package:mac
-            artifact: macOS-installer
-          - runner: windows-latest
+            artifact: macOS-candidate
+          - runner: windows-2022
             command: package:win
             artifact: Windows-installer
     runs-on: ${{ matrix.runner }}
@@ -27,10 +31,69 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --filter "@workspace/stream-audio-control..."
+      - name: Check smoke-test assertions
+        run: node --test artifacts/stream-audio-control/desktop/smoke-check.test.mjs
       - run: pnpm --filter "@workspace/stream-audio-control" run ${{ matrix.command }}
+      - name: Validate Windows per-user installation and launch
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./artifacts/stream-audio-control/desktop/run-windows-validation.ps1
+      - name: Upload Windows validation evidence
+        if: always() && runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-native-validation
+          path: ${{ runner.temp }}/desktop-validation/
+          if-no-files-found: warn
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: artifacts/stream-audio-control/release/*
+          path: |
+            artifacts/stream-audio-control/release/*.exe
+            artifacts/stream-audio-control/release/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+
+  macos-validation:
+    needs: installers
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: macOS-candidate
+          path: artifacts/stream-audio-control/release
+      - name: Verify signatures and launch the installed universal app natively
+        run: bash artifacts/stream-audio-control/desktop/test-macos-install.sh
+      - name: Upload native validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-native-validation-${{ matrix.runner }}
+          path: ${{ runner.temp }}/desktop-validation/
+          if-no-files-found: warn
+          retention-days: 30
+
+  verified-macos-installer:
+    needs: macos-validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: macOS-candidate
+          path: release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macOS-installer
+          path: release/*.dmg
           if-no-files-found: error
           retention-days: 30

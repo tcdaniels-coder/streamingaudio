@@ -1,0 +1,1 @@
+- [Desktop distribution constraints](desktop-distribution.md) — cross-build and download-delivery limitations; native launch and hardware verification remain necessary.

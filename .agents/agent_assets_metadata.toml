@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "SzM8MFAJ9SPzKdk5rn4Gv"
+uri = "file://artifacts/stream-audio-control/release/downloads.html"
+type = "html"
+title = "Download Stream Audio Control"
+description = "Download Windows, Apple Silicon Mac, or Intel Mac test builds. Includes installation notes and checksums. Download links are valid for seven days."
+logical_id = "f17dbafb-185f-4f97-82d2-b43a161ce470"
+content_hash = "sha256:7a80f979da54792ae300c4d3bf6645735146936d09bd304779080b832eb67ccf"
+size = 5106
+mtime_ms = 1793412751928
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:466134d1-1279-46ae-96e1-651a969f5816/f17dbafb-185f-4f97-82d2-b43a161ce470/ca5c1e8b-1abb-475b-ba8e-b2daac10e62d"
+storage_version_token = "1793412756157566"
+content_type = "text/html"

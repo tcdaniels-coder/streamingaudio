@@ -93,6 +93,7 @@
     "appId": "com.streamaudiocontrol.desktop",
     "productName": "Stream Audio Control",
     "asar": true,
+    "npmRebuild": false,
     "directories": {
       "output": "release"
     },
@@ -100,9 +101,14 @@
       "bridge/**/*",
       "desktop/**/*",
       "dist/public/**/*",
-      "package.json"
+      "package.json",
+      "!**/node_modules/@julusian/freetype2/build/**"
     ],
     "mac": {
+      "identity": "-",
+      "hardenedRuntime": false,
+      "entitlements": "desktop/entitlements.plist",
+      "entitlementsInherit": "desktop/entitlements.plist",
       "category": "public.app-category.audio-video",
       "target": [
         {
@@ -120,6 +126,8 @@
       ]
     },
     "nsis": {
+      "script": "desktop/installer.nsi",
+      "installerLanguages": ["en_US"],
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
