@@ -30,7 +30,7 @@ codesign --display --verbose=4 "$bundle" 2>&1 | tee "$report_dir/signature.txt"
 codesign --display --entitlements :- "$bundle" > "$report_dir/entitlements.plist"
 plutil -lint "$report_dir/entitlements.plist"
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.cs.allow-jit' "$report_dir/entitlements.plist")" == "true" ]]
-lipo -verify_arch x86_64 arm64 "$binary"
+lipo "$binary" -verify_arch x86_64 arm64
 
 # Gatekeeper is evidence, not an integrity check: ad-hoc test builds are expected
 # to be rejected, and must never be advertised as Developer ID/notarized releases.

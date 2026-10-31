@@ -35,8 +35,13 @@ try {
   New-Item -ItemType Directory -Force $env:TEMP | Out-Null
   Write-Output "Validated standard-user token and loaded a clean profile"
   $installDir = Join-Path $env:LOCALAPPDATA "Programs\Stream Audio Control"
-  $desktopLink = Join-Path ([Environment]::GetFolderPath("Desktop")) "Stream Audio Control.lnk"
-  $startMenuDir = Join-Path ([Environment]::GetFolderPath("Programs")) "Stream Audio Control"
+  # Fresh profiles have never had Explorer create their known folders.
+  $desktopFolder = [Environment]::GetFolderPath([Environment+SpecialFolder]::Desktop, [Environment+SpecialFolderOption]::Create)
+  $programsFolder = [Environment]::GetFolderPath([Environment+SpecialFolder]::Programs, [Environment+SpecialFolderOption]::Create)
+  Require (-not [string]::IsNullOrEmpty($desktopFolder)) "Desktop known folder could not be created"
+  Require (-not [string]::IsNullOrEmpty($programsFolder)) "Start menu known folder could not be created"
+  $desktopLink = Join-Path $desktopFolder "Stream Audio Control.lnk"
+  $startMenuDir = Join-Path $programsFolder "Stream Audio Control"
   $registrySuffix = "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamAudioControl"
   $registryKey = "HKCU:\$registrySuffix"
   $machineKey = "HKLM:\$registrySuffix"
