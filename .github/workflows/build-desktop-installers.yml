@@ -7,11 +7,10 @@ on:
         description: "Optional prior run with both candidate artifacts to retest without rebuilding"
         required: false
         type: string
-  push:
-    branches: [desktop-native-validation]
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   installers:
