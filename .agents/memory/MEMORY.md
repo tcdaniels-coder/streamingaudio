@@ -1,1 +1,2 @@
 - [Desktop distribution constraints](desktop-distribution.md) — cross-build and download-delivery limitations; native launch and hardware verification remain necessary.
+- [Native desktop validation](native-desktop-validation.md) — hosted Windows privilege checks, universal Mac archive limits, and platform-specific build dependencies.

@@ -62,7 +62,7 @@ install software on the mixer.
 The workflow tests the **newly built** release, not previously downloaded files:
 
 - Windows: create a fresh standard-user account with its own profile and HKCU,
-  and run the tests in a scheduled task as that non-administrator account.
+  and launch a profile-loaded process as that non-administrator account.
   The runner's administrator account is not used for installation or launch.
   The VM-only password is generated in memory, never logged, and the test account
   is removed afterward. Refuse existing app files, shortcuts, or uninstall entries.
@@ -87,10 +87,17 @@ The workflow tests the **newly built** release, not previously downloaded files:
   connects to hardware or sends mixer/switcher commands.
 
 `Windows-installer` uploads only after Windows checks pass.
-`macOS-candidate` is **not validated**; `macOS-installer` uploads only after both
+`Windows-candidate` and `macOS-candidate` are **not validated**;
+`macOS-installer` uploads only after both
 Mac runners pass. Validation logs and JSON reports are retained for 30 days,
 including on failures. Gatekeeper's assessment is saved separately: rejection
 is expected for ad-hoc test builds and is not treated as signature corruption.
+
+To rerun only native validation against identical binaries, dispatch the workflow
+with `candidate_run_id` set to a prior run containing both candidate artifacts.
+This skips packaging and uses the current test scripts. Leave it blank when
+application or packaging code changes; smoke checks inside an older binary
+cannot validate a newer implementation.
 
 Workflow success establishes native install/launch smoke checks only, not
 production trust, notarization, or physical X32/ATEM reliability. Until a native

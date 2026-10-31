@@ -23,6 +23,17 @@ $exitCode = 1
 try {
   $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
   Require (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) "Test must run with an unelevated, per-user token"
+  # CreateProcessWithLogon may inherit the invoking account's environment.
+  # Resolve the loaded profile by the ACTUAL token, not inherited APPDATA.
+  $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+  $profile = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$sid").ProfileImagePath
+  $env:USERPROFILE = [Environment]::ExpandEnvironmentVariables($profile)
+  $env:LOCALAPPDATA = Join-Path $env:USERPROFILE "AppData\Local"
+  $env:APPDATA = Join-Path $env:USERPROFILE "AppData\Roaming"
+  $env:TEMP = Join-Path $env:LOCALAPPDATA "Temp"
+  $env:TMP = $env:TEMP
+  New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+  Write-Output "Validated standard-user token and loaded a clean profile"
   $installDir = Join-Path $env:LOCALAPPDATA "Programs\Stream Audio Control"
   $desktopLink = Join-Path ([Environment]::GetFolderPath("Desktop")) "Stream Audio Control.lnk"
   $startMenuDir = Join-Path ([Environment]::GetFolderPath("Programs")) "Stream Audio Control"

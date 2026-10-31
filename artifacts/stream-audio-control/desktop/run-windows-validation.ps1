@@ -5,7 +5,6 @@ $release = Join-Path $PSScriptRoot "..\release"
 $installers = @(Get-ChildItem $release -Filter "*.exe")
 if ($installers.Count -ne 1) { throw "Expected exactly one Windows installer" }
 $node = (Get-Command node).Source
-$taskName = "StreamAudioControl-NativeValidation"
 $userName = "SACDesktopTest"
 $account = "$env:COMPUTERNAME\$userName"
 $shared = Join-Path $env:PUBLIC ("DesktopValidation-" + [Guid]::NewGuid().ToString("N"))
@@ -14,7 +13,6 @@ $shared = Join-Path $env:PUBLIC ("DesktopValidation-" + [Guid]::NewGuid().ToStri
 # This ephemeral VM-only password is generated in memory and never logged.
 $password = [Guid]::NewGuid().ToString("N") + "aA1!"
 $createdUser = $false
-$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 8)
 try {
   New-LocalUser -Name $userName -Password (ConvertTo-SecureString $password -AsPlainText -Force) -AccountNeverExpires | Out-Null
   $createdUser = $true
@@ -30,28 +28,22 @@ try {
   & icacls.exe $shared /grant "${account}:(OI)(CI)M" | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "Could not grant the test user access to test fixtures" }
   $script = Join-Path $shared "test-windows-install.ps1"
-  $action = New-ScheduledTaskAction -Execute "powershell.exe" -WorkingDirectory $shared -Argument (
+  $arguments = (
     "-NoProfile -ExecutionPolicy Bypass -File `"$script`" -Installer `"$(Join-Path $shared 'installer.exe')`" -Node `"$(Join-Path $shared 'node.exe')`" -ReportDirectory `"$sharedReports`""
   )
-  Register-ScheduledTask -TaskName $taskName -Action $action -User $account -Password $password -RunLevel Limited -Settings $settings -Force | Out-Null
-  Start-ScheduledTask $taskName
-  $deadline = (Get-Date).AddMinutes(9)
-  do {
-    Start-Sleep -Seconds 2
-    $info = Get-ScheduledTaskInfo $taskName
-    $state = (Get-ScheduledTask $taskName).State
-    if ((Get-Date) -gt $deadline) { throw "Unelevated validation task timed out" }
-  } while ($info.LastRunTime.Year -lt 2020 -or $state -eq "Running" -or $state -eq "Queued")
-  if ($info.LastTaskResult -ne 0 -or -not (Test-Path (Join-Path $sharedReports "windows-result.txt"))) {
+  $credential = [PSCredential]::new($account, (ConvertTo-SecureString $password -AsPlainText -Force))
+  $process = Start-Process -FilePath "powershell.exe" -ArgumentList $arguments -WorkingDirectory $shared -Credential $credential -LoadUserProfile -PassThru -RedirectStandardOutput (Join-Path $sharedReports "launcher-stdout.log") -RedirectStandardError (Join-Path $sharedReports "launcher-stderr.log")
+  if (-not $process.WaitForExit(360000)) {
+    $process.Kill()
+    throw "Standard-user validation process timed out"
+  }
+  if ($process.ExitCode -ne 0 -or -not (Test-Path (Join-Path $sharedReports "windows-result.txt"))) {
+    Get-ChildItem $sharedReports -Filter "*.log" | Get-Content
     Get-ChildItem $sharedReports -Filter "*.txt" | Get-Content
-    throw "Unelevated Windows validation failed (exit $($info.LastTaskResult))"
+    throw "Standard-user Windows validation failed (exit $($process.ExitCode))"
   }
   Get-Content (Join-Path $sharedReports "windows-result.txt")
 } finally {
-  if (Get-ScheduledTask $taskName -ErrorAction SilentlyContinue) {
-    Stop-ScheduledTask $taskName -ErrorAction SilentlyContinue
-    Unregister-ScheduledTask $taskName -Confirm:$false
-  }
   if (Test-Path (Join-Path $shared "reports")) {
     Copy-Item (Join-Path $shared "reports\*") $reportDir -Force
   }

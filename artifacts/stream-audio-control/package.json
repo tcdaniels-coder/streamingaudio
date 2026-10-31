@@ -12,8 +12,8 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "local": "node bridge/server.mjs",
     "desktop": "electron .",
-    "package:mac": "pnpm run build && electron-builder --mac dmg --universal",
-    "package:win": "pnpm run build && electron-builder --win nsis --x64",
+    "package:mac": "pnpm run build && electron-builder --mac dmg --universal --publish never",
+    "package:win": "pnpm run build && electron-builder --win nsis --x64 --publish never",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

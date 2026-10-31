@@ -2,6 +2,11 @@ name: Build desktop installers
 
 on:
   workflow_dispatch:
+    inputs:
+      candidate_run_id:
+        description: "Optional prior run with both candidate artifacts to retest without rebuilding"
+        required: false
+        type: string
   push:
     branches: [desktop-native-validation]
 
@@ -17,25 +22,46 @@ jobs:
         include:
           - runner: macos-15
             command: package:mac
-            artifact: macOS-candidate
+            candidate: macOS-candidate
           - runner: windows-2022
             command: package:win
-            artifact: Windows-installer
+            candidate: Windows-candidate
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        if: ${{ !inputs.candidate_run_id }}
         with:
           version: 10.26.1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
+          cache: ${{ !inputs.candidate_run_id && 'pnpm' || '' }}
           cache-dependency-path: pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile --filter "@workspace/stream-audio-control..."
+      - if: ${{ !inputs.candidate_run_id }}
+        run: pnpm install --frozen-lockfile --filter "@workspace/stream-audio-control..."
       - name: Check smoke-test assertions
         run: node --test artifacts/stream-audio-control/desktop/smoke-check.test.mjs
-      - run: pnpm --filter "@workspace/stream-audio-control" run ${{ matrix.command }}
+      - if: ${{ !inputs.candidate_run_id }}
+        run: pnpm --filter "@workspace/stream-audio-control" run ${{ matrix.command }}
+      - name: Retest existing candidate
+        if: ${{ inputs.candidate_run_id }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.candidate }}
+          path: artifacts/stream-audio-control/release
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.candidate_run_id }}
+      - name: Retain candidate before native validation
+        if: ${{ !inputs.candidate_run_id }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.candidate }}
+          path: |
+            artifacts/stream-audio-control/release/*.exe
+            artifacts/stream-audio-control/release/*.dmg
+          if-no-files-found: error
+          retention-days: 30
       - name: Validate Windows per-user installation and launch
         if: runner.os == 'Windows'
         shell: pwsh
@@ -49,8 +75,9 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
       - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
         with:
-          name: ${{ matrix.artifact }}
+          name: Windows-installer
           path: |
             artifacts/stream-audio-control/release/*.exe
             artifacts/stream-audio-control/release/*.dmg
@@ -59,6 +86,8 @@ jobs:
 
   macos-validation:
     needs: installers
+    # A Windows failure must not suppress validation of an available Mac DMG.
+    if: ${{ !cancelled() }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -74,6 +103,8 @@ jobs:
         with:
           name: macOS-candidate
           path: artifacts/stream-audio-control/release
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.candidate_run_id || github.run_id }}
       - name: Verify signatures and launch the installed universal app natively
         run: bash artifacts/stream-audio-control/desktop/test-macos-install.sh
       - name: Upload native validation evidence
@@ -93,6 +124,8 @@ jobs:
         with:
           name: macOS-candidate
           path: release
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.candidate_run_id || github.run_id }}
       - uses: actions/upload-artifact@v4
         with:
           name: macOS-installer
