@@ -198,14 +198,39 @@ async function disconnectDevices() {
   ]);
 }
 
-const server = app.listen(port, host, () => {
+export async function startBridge() {
+  const server = app.listen(port, host);
+  await new Promise((resolve, reject) => {
+    server.once("listening", resolve);
+    server.once("error", reject);
+  });
   process.stdout.write(`Stream Audio Control local bridge listening on http://${host}:${port}\n`);
-});
 
-async function stop() {
-  await disconnectDevices();
-  server.close(() => process.exit(0));
+  let stopPromise;
+  async function stop() {
+    if (!stopPromise) {
+      stopPromise = (async () => {
+        await disconnectDevices();
+        await new Promise((resolve, reject) => {
+          server.close((error) => error ? reject(error) : resolve());
+        });
+      })();
+    }
+    return stopPromise;
+  }
+
+  return { server, stop };
 }
 
-process.on("SIGINT", stop);
-process.on("SIGTERM", stop);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const bridge = await startBridge();
+  let stopping = false;
+  const stop = async () => {
+    if (stopping) return;
+    stopping = true;
+    await bridge.stop();
+    process.exit(0);
+  };
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
+}

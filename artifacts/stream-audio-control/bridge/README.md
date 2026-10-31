@@ -4,6 +4,9 @@ The hardware bridge runs on the computer connected to the X32 and ATEM network.
 It listens on loopback only (`127.0.0.1`) and will not accept control requests
 from the hosted preview or other websites.
 
+For normal use, install and open the desktop app; it starts the bridge
+automatically. The manual steps below are for development or troubleshooting.
+
 ## Requirements
 
 - Node.js 24 LTS and pnpm 10.
@@ -11,8 +14,8 @@ from the hosted preview or other websites.
   production network.
 - Connect the ATEM Production Studio 4K over Ethernet. The ATEM connection
   library used here does not support USB control.
-- If prompted, allow Node.js through the macOS or Windows firewall on the
-  private network.
+- If prompted, allow Stream Audio Control through the macOS or Windows firewall
+  on the private network. For manual development mode, allow Node.js instead.
 
 The `atem-connection` library reports that it is tested on switcher models from
 every generation and aims to support all models. This exact Production Studio

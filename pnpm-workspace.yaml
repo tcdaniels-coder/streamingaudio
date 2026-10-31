@@ -79,9 +79,7 @@ overrides:
   "source-map-js@^1": "^1.2.2"
   "fast-uri@^3": "^3.1.8"
   "brace-expansion@^5": "^5.0.12"
-  # replit uses linux-x64 only, we can exclude all other platforms
-  "esbuild>@esbuild/darwin-arm64": "-"
-  "esbuild>@esbuild/darwin-x64": "-"
+  # Keep macOS esbuild binaries available for native desktop installer builds.
   "esbuild>@esbuild/freebsd-arm64": "-"
   "esbuild>@esbuild/freebsd-x64": "-"
   "esbuild>@esbuild/linux-arm": "-"

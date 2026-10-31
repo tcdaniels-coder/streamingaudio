@@ -226,7 +226,7 @@ function ConsolePage() {
         <div className="summary-row"><span>Selected stream bus</span><span data-testid="value-selected-bus">{demo ? 'SIMULATED' : bridge.status.streamBus.busNumber ? `BUS ${bridge.status.streamBus.busNumber}` : 'NOT SELECTED'}</span></div>
         <div className="summary-row"><span>Hardware writes</span><span>{demo ? 'DISABLED IN DEMO' : 'CONFIRM EACH ACTION'}</span></div>
       </section>
-      <section className="panel quick-actions"><h2 className="summary-title">Device setup</h2><p>Configure the local bridge and address each device on the operator network. The Replit preview cannot reach your physical LAN.</p>
+      <section className="panel quick-actions"><h2 className="summary-title">Device setup</h2><p>Open the desktop app on your show computer to connect to the local network. The Replit preview cannot reach your physical LAN.</p>
         <div className="button-row"><Link href="/setup" className="btn btn-primary" data-testid="link-open-setup">Open setup</Link>{demo && <span className="sim-label">NO LIVE CONTROL</span>}</div>
       </section>
     </div>
@@ -263,11 +263,11 @@ function SetupPage() {
   return <AppFrame><main className="shell-content">
     <div className="header-row"><div><div className="eyebrow">Operator configuration</div><h1 className="page-title">Bridge & device setup</h1><p className="page-subtitle">Connect from your macOS or Windows show computer through the local bridge.</p></div>
       <div className="mode-pill" data-testid="status-setup-mode"><span className="mode-dot" />{demo ? 'Demo · not connected' : 'Local hardware mode'}</div></div>
-    {demo && <div className="setup-warning" data-testid="status-setup-demo"><strong>DEMO — THIS PREVIEW CANNOT REACH YOUR LAN.</strong> The browser preview is not running on the operator computer. Install and open the local bridge there to access the X32 and ATEM. Entering addresses here does not establish a hardware connection.</div>}
+    {demo && <div className="setup-warning" data-testid="status-setup-demo"><strong>DEMO — THIS PREVIEW CANNOT REACH YOUR LAN.</strong> The browser preview is not running on the operator computer. Open the desktop app there to access the X32 and ATEM. Entering addresses here does not establish a hardware connection.</div>}
     {!!bridge.error && <div className="error-banner" role="alert" data-testid="status-setup-error"><span>{bridge.error}</span><button className="btn btn-quiet" onClick={() => void bridge.refresh()} data-testid="button-retry-setup">Retry status</button></div>}
     <div className="setup-layout">
       <section className="panel setup-panel"><div className="panel-head" style={{ margin: '-22px -22px 2px' }}><div className="panel-label"><span className="device-icon"><Cable size={15} /></span>GET THE LOCAL BRIDGE READY</div><span className="eyebrow">01 — 03</span></div>
-        <div className="step"><span className="step-num">01</span><div><h3>Run the bridge on the operator computer</h3><p>The local bridge runs on macOS and Windows. Start it on the machine connected to your production network, then open this console from that same computer.</p></div></div>
+        <div className="step"><span className="step-num">01</span><div><h3>Open the desktop app on the show computer</h3><p>The desktop app starts its local bridge automatically on macOS and Windows. Open it on the machine connected to your production network.</p></div></div>
         <div className="step"><span className="step-num">02</span><div><h3>Use device addresses on your show network</h3><p>Enter the X32 and ATEM IPv4 addresses below. Ensure the computer and devices share a reachable network and that device control is enabled.</p></div></div>
         <div className="step"><span className="step-num">03</span><div><h3>Confirm both links before the show</h3><p>Check that the console reports each device as connected. Connection requests do not write mixer settings; stream bus changes require a separate confirmation.</p></div></div>
         <div className="callout"><strong>Safety note</strong><br />A green connection state means the bridge reports a device link. It does not confirm the correctness of a show mix or switcher configuration.</div>

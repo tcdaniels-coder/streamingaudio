@@ -1,13 +1,19 @@
 {
   "name": "@workspace/stream-audio-control",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A local desktop console for X32 stream audio and ATEM link status.",
+  "author": "Stream Audio Control",
   "private": true,
   "type": "module",
+  "main": "desktop/main.mjs",
   "scripts": {
     "dev": "vite --config vite.config.ts --host 0.0.0.0",
     "build": "vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "local": "node bridge/server.mjs",
+    "desktop": "electron .",
+    "package:mac": "pnpm run build && electron-builder --mac dmg --universal",
+    "package:win": "pnpm run build && electron-builder --win nsis --x64",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
@@ -55,6 +61,8 @@
     "clsx": "catalog:",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "catalog:",
     "input-otp": "^1.4.2",
@@ -80,5 +88,43 @@
     "atem-connection": "^3.10.3",
     "express": "^5.3.0",
     "osc": "^2.4.5"
+  },
+  "build": {
+    "appId": "com.streamaudiocontrol.desktop",
+    "productName": "Stream Audio Control",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "bridge/**/*",
+      "desktop/**/*",
+      "dist/public/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.audio-video",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "perMachine": false
+    }
   }
 }
