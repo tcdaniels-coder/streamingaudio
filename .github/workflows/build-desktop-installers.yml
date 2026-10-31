@@ -2,6 +2,8 @@ name: Build desktop installers
 
 on:
   workflow_dispatch:
+  push:
+    branches: [desktop-native-validation]
 
 permissions:
   contents: read
