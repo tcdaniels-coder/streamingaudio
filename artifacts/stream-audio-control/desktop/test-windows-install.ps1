@@ -54,8 +54,9 @@ try {
       New-ItemProperty $shellKey -Name $entry.Key -Value $entry.Value -PropertyType String -Force | Out-Null
     }
   }
-  Require ([Environment]::GetFolderPath("Desktop") -eq $desktopFolder) "Desktop known folder is not initialized correctly"
-  Require ([Environment]::GetFolderPath("Programs") -eq $programsFolder) "Start menu known folder is not initialized correctly"
+  # PowerShell's already-loaded shell APIs can cache the pre-provisioning
+  # lookup. The newly launched installer must create shortcuts in the actual
+  # configured folders; their existence AND target are asserted below.
   $desktopLink = Join-Path $desktopFolder "Stream Audio Control.lnk"
   $startMenuDir = Join-Path $programsFolder "Stream Audio Control"
   $registrySuffix = "Software\Microsoft\Windows\CurrentVersion\Uninstall\StreamAudioControl"
@@ -100,7 +101,7 @@ try {
     Set-Content (Join-Path $ReportDirectory "windows-result.txt")
   $exitCode = 0
 } catch {
-  $_ | Out-String | Set-Content (Join-Path $ReportDirectory "windows-failure.txt")
+  ($_ | Out-String) + $_.ScriptStackTrace | Set-Content (Join-Path $ReportDirectory "windows-failure.txt")
   Write-Error $_ -ErrorAction Continue
 } finally {
   Stop-Transcript
