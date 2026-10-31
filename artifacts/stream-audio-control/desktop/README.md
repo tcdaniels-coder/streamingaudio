@@ -61,8 +61,11 @@ install software on the mixer.
 
 The workflow tests the **newly built** release, not previously downloaded files:
 
-- Windows: start an unelevated interactive task in the fresh hosted runner's
-  per-user profile. Refuse existing app files, shortcuts, or uninstall entries.
+- Windows: create a fresh standard-user account with its own profile and HKCU,
+  and run the tests in a scheduled task as that non-administrator account.
+  The runner's administrator account is not used for installation or launch.
+  The VM-only password is generated in memory, never logged, and the test account
+  is removed afterward. Refuse existing app files, shortcuts, or uninstall entries.
   Silently install, verify HKCU registration and both shortcuts (and no HKLM
   registration), launch the installed executable from outside the repository,
   and run read-only console/bridge checks. Silently uninstall and require removal
@@ -73,6 +76,9 @@ The workflow tests the **newly built** release, not previously downloaded files:
   `ditto`, run Apple's `codesign --verify --deep --strict`, inspect entitlements,
   and require both Mach-O architectures. Launch natively on each runner and
   require Electron to report the matching runtime architecture.
+  The universal bundle keeps separate architecture-specific ASARs because
+  merging the automatically unpacked native dependencies exceeds ASAR's glob
+  length limit. Architecture-named FreeType prebuilds remain separate binaries.
 - Both: a packaged-only smoke launch loads the real bridge dependencies,
   checks disconnected local status, bundled HTML/JavaScript/CSS, a visible window,
   and the rendered Live console. It then stops the bridge and exits. An external

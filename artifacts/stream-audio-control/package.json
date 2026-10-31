@@ -110,6 +110,7 @@
       "entitlements": "desktop/entitlements.plist",
       "entitlementsInherit": "desktop/entitlements.plist",
       "x64ArchFiles": "**/node_modules/@julusian/freetype2/prebuilds/**",
+      "mergeASARs": false,
       "category": "public.app-category.audio-video",
       "target": [
         {
